@@ -1,13 +1,14 @@
 #[macro_use] extern crate log;
 extern crate env_logger;
 
-
+#[derive(Debug)]
 pub struct Config {
     pub ImapControl: ServerConfig,
     pub Imap: ServerConfig,
     pub Smtp: ServerConfig,
 }
 
+#[derive(Debug)]
 pub struct ServerConfig {
     pub port: u16,
     pub host: String,
@@ -21,16 +22,36 @@ impl ServerConfig {
         Self {
             port: 0,
             host: String::new(),
-            encryption: Encryption::tls,
+            encryption: Encryption::starttls,
             user: String::new(),
             password: String::new(),
         }
     }
 }
 
+#[derive(Debug)]
+pub struct Company {
+    pub name: String,
+    pub mail: String,
+    pub alias: String,
+    pub onw_name: String,
+    pub interval: usize,
+}
+
+#[derive(Debug)]
 pub enum Encryption {
     tls,
     starttls
+}
+
+impl Encryption {
+    pub fn parse(value: &str) -> Self {
+        match value.to_lowercase().as_str() {
+            "tls" => Encryption::tls,
+            "starttls" => Encryption::starttls,
+            _ => Encryption::starttls,
+        }
+    }
 }
 
 impl Config {
@@ -40,7 +61,7 @@ impl Config {
 
     /// run main logic
     pub fn run(self) {
-        warn!("create a run function");
+        warn!("create a run function to run:\n{:?}", self);
     }
 }
 
