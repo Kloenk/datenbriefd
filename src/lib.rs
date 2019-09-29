@@ -94,7 +94,6 @@ impl Config {
 
     /// run main logic
     pub fn run(mut self) {
-        //self.write_time().unwrap();
         info!(
             "startind datenbriefd version: {}",
             env!("CARGO_PKG_VERSION")
@@ -117,6 +116,35 @@ impl Config {
         }
 
         error!("create a run function to run:\n{:?}", self);
+
+        loop {
+            let now: DateTime<Utc> = Utc::now();
+            for v in self.companies.iter_mut() {
+                let v: &mut Company = v;
+                if v.next_hit <= now {
+                    info!("{} is elapsed, {} reminder", v.name, v.reminder);
+
+                    // update time
+                    let now: DateTime<Utc> = now.clone();
+                    if let Some(value) =
+                        now.checked_add_signed(chrono::Duration::days(v.interval as i64))
+                    {
+                        v.next_hit = value;
+                        trace!("update {} to {}", v.name, value);
+                    }
+
+                    warn!("implement mail send");
+                    if !self.dry_run {}
+                }
+            }
+
+            // update time table
+            if !self.dry_run {
+                self.write_time();
+            }
+
+            std::thread::sleep(std::time::Duration::from_secs(100));
+        }
     }
 
     /// parse time table file
