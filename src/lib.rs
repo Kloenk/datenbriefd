@@ -1,11 +1,19 @@
-#[macro_use] extern crate log;
+#[macro_use]
+extern crate log;
 extern crate env_logger;
 
-#[macro_use] extern crate serde_json;
+#[macro_use]
+extern crate serde_json;
 
-use serde_json::{Value};
-use std::{io::{Read, Write}, fs::{File, OpenOptions}};
+#[cfg(test)]
+mod tests;
+
 use chrono::prelude::*;
+use serde_json::Value;
+use std::{
+    fs::{File, OpenOptions},
+    io::{Read, Write},
+};
 
 #[derive(Debug)]
 pub struct Config {
@@ -66,7 +74,7 @@ impl Company {
 #[derive(Debug)]
 pub enum Encryption {
     tls,
-    starttls
+    starttls,
 }
 
 impl Encryption {
@@ -87,33 +95,33 @@ impl Config {
     /// run main logic
     pub fn run(mut self) {
         //self.write_time().unwrap();
-        info!("startind datenbriefd version: {}", env!("CARGO_PKG_VERSION"));
+        info!(
+            "startind datenbriefd version: {}",
+            env!("CARGO_PKG_VERSION")
+        );
         info!("loaded {} companies", &self.companies.len());
         trace!("load companies time table");
-        self.parse_time_file();
 
+        // parse time file
+        match self.parse_time_file() {
+            Ok(data) => {
+                self.parse_time(&data);
+            }
+            Err(err) => {
+                use std::io::ErrorKind::*;
+                match err.kind() {
+                    NotFound => info!("could not load {} as timetable: Not Found", self.time_file),
+                    _ => info!("could not load {} as timetable: {}", self.time_file, err),
+                }
+            }
+        }
 
         error!("create a run function to run:\n{:?}", self);
     }
 
     /// parse time table file
-    fn parse_time_file(&mut self) {
-        debug!("load {} as time table", self.time_file);
-
-        let file = File::open(&self.time_file);
-        if let Err(err) = file {
-            if err.kind() == std::io::ErrorKind::NotFound {
-                trace!("could not load {}: File Not Found", self.time_file);
-            } else {
-                warn!("could not load {}: {}", self.time_file, err);
-            }
-            return;
-        }
-        let mut file = file.unwrap();
-        let mut data = String::new();
-        file.read_to_string(&mut data).unwrap();
-
-        let json: serde_json::Result<Value> = serde_json::from_str(&data);
+    pub(crate) fn parse_time(&mut self, data: &str) {
+        let json: serde_json::Result<Value> = serde_json::from_str(data);
         if let Err(err) = json {
             warn!("error parsing json time table: {}", err);
             return;
@@ -145,6 +153,15 @@ impl Config {
         }
     }
 
+    fn parse_time_file(&self) -> std::io::Result<String> {
+        debug!("load {} as time table", self.time_file);
+        let mut file = File::open(&self.time_file)?;
+        let mut data = String::new();
+        file.read_to_string(&mut data)?;
+
+        Ok(data)
+    }
+
     fn write_time(&self) -> std::io::Result<()> {
         let mut json: Value = Value::default();
 
@@ -153,9 +170,11 @@ impl Config {
             json[&v.name] = json!({"next": v.next_hit.to_rfc3339(), "reminder": v.reminder});
         }
 
-       
-        debug!("write to time file:\n{}", serde_json::to_string_pretty(&json).unwrap());
-         let json: String = json.to_string();
+        debug!(
+            "write to time file:\n{}",
+            serde_json::to_string_pretty(&json).unwrap()
+        );
+        let json: String = json.to_string();
         let mut file = File::create(&self.time_file)?;
 
         file.write_all(json.as_bytes())?;

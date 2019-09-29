@@ -1,8 +1,9 @@
-#[macro_use] extern crate log;
+#[macro_use]
+extern crate log;
 extern crate env_logger;
 
 use clap::{App, Arg, SubCommand};
-use datenbriefd::{Config, Company};
+use datenbriefd::{Company, Config};
 
 fn main() {
     env_logger::init();
@@ -12,36 +13,36 @@ fn main() {
         .about("mail daemon to periodicly send a datenbrief")
         .setting(clap::AppSettings::ColorAuto)
         .setting(clap::AppSettings::ColoredHelp)
-         .arg(
+        .arg(
             Arg::with_name("config")
                 .short("c")
                 .long("config")
                 .value_name("FILE")
                 .help("set config file")
                 .takes_value(true)
-                .default_value("config.toml")
-        ) 
+                .default_value("config.toml"),
+        )
         .arg(
             Arg::with_name("time-file")
                 .short("t")
                 .long("time-file")
                 .value_name("FILE")
                 .help("set time json file")
-                .takes_value(true)
+                .takes_value(true),
         )
         .arg(
             Arg::with_name("control.server")
                 .long("control-server")
                 .value_name("SERVER")
                 .help("server for the imap control")
-                .takes_value(true)
+                .takes_value(true),
         )
         .arg(
             Arg::with_name("control.port")
                 .long("control-port")
                 .value_name("PORT")
                 .help("port for the imap control")
-                .takes_value(true)
+                .takes_value(true),
         )
         .arg(
             Arg::with_name("control.encryption")
@@ -50,35 +51,35 @@ fn main() {
                 .help("encryption type for the control imap")
                 .takes_value(true)
                 .possible_value("tls")
-                .possible_value("starttls")
+                .possible_value("starttls"),
         )
         .arg(
             Arg::with_name("control.user")
                 .long("control-user")
                 .value_name("USER")
                 .help("user name for control imap")
-                .takes_value(true)
+                .takes_value(true),
         )
         .arg(
             Arg::with_name("control.password")
                 .long("control-password")
                 .value_name("PASSWORD")
                 .help("password for control imap")
-                .takes_value(true)
+                .takes_value(true),
         )
         .arg(
             Arg::with_name("imap.server")
                 .long("imap-server")
                 .value_name("SERVER")
                 .help("server for the imap")
-                .takes_value(true)
+                .takes_value(true),
         )
         .arg(
             Arg::with_name("imap.port")
                 .long("imap-port")
                 .value_name("PORT")
                 .help("port for the imap")
-                .takes_value(true)
+                .takes_value(true),
         )
         .arg(
             Arg::with_name("imap.encryption")
@@ -87,35 +88,35 @@ fn main() {
                 .help("encryption type for the imap")
                 .takes_value(true)
                 .possible_value("tls")
-                .possible_value("starttls")
+                .possible_value("starttls"),
         )
         .arg(
             Arg::with_name("imap.user")
                 .long("imap-user")
                 .value_name("USER")
                 .help("user name for imap")
-                .takes_value(true)
+                .takes_value(true),
         )
         .arg(
             Arg::with_name("imap.password")
                 .long("imap-password")
                 .value_name("PASSWORD")
                 .help("password for imap")
-                .takes_value(true)
+                .takes_value(true),
         )
         .arg(
             Arg::with_name("smtp.server")
                 .long("smtp-server")
                 .value_name("SERVER")
                 .help("server for the smtp")
-                .takes_value(true)
+                .takes_value(true),
         )
         .arg(
             Arg::with_name("smtp.port")
                 .long("smtp-port")
                 .value_name("PORT")
                 .help("port for the smtp")
-                .takes_value(true)
+                .takes_value(true),
         )
         .arg(
             Arg::with_name("smtp.encryption")
@@ -124,21 +125,21 @@ fn main() {
                 .help("encryption type for the smtp")
                 .takes_value(true)
                 .possible_value("tls")
-                .possible_value("starttls")
+                .possible_value("starttls"),
         )
         .arg(
             Arg::with_name("smtp.user")
                 .long("smtp-user")
                 .value_name("USER")
                 .help("user name for smtp")
-                .takes_value(true)
+                .takes_value(true),
         )
         .arg(
             Arg::with_name("smtp.password")
                 .long("smtp-password")
                 .value_name("PASSWORD")
                 .help("password for smtp")
-                .takes_value(true)
+                .takes_value(true),
         )
         .arg(
             Arg::with_name("interval")
@@ -146,50 +147,50 @@ fn main() {
                 .short("i")
                 .value_name("DAYS")
                 .help("set global interval, if local interval is not set")
-                .takes_value(true)
+                .takes_value(true),
         )
         .arg(
             Arg::with_name("dry-run")
                 .long("dry-run")
                 .short("d")
-                .help("make dry run")
+                .help("make dry run"),
         )
         .arg(
             Arg::with_name("company-name")
                 .long("company-name")
                 .value_name("NAME")
                 .help("name (only on company)")
-                .takes_value(true)
+                .takes_value(true),
         )
         .arg(
             Arg::with_name("company-mail")
                 .long("company-mail")
                 .value_name("MAIL")
                 .help("mail for the command line company")
-                .takes_value(true)
+                .takes_value(true),
         )
         .arg(
             Arg::with_name("company-alias")
                 .long("company-alias")
                 .value_name("MAIL")
                 .help("local alias for the command line Company")
-                .takes_value(true)
+                .takes_value(true),
         )
         .arg(
             Arg::with_name("company-own-name")
                 .long("company-own-name")
                 .value_name("NAME")
                 .help("own name to send to the command line Company")
-                .takes_value(true)
+                .takes_value(true),
         )
         .arg(
             Arg::with_name("company-interval")
                 .long("company-interval")
                 .value_name("DAYS")
                 .help("interval to send to the command line Company")
-                .takes_value(true)
+                .takes_value(true),
         );
-    
+
     if cfg!(feature = "completion") {
         app = app.subcommand(
             SubCommand::with_name("completion")
@@ -216,7 +217,7 @@ fn main() {
                         .long("output"),
                 )
                 .setting(clap::AppSettings::ColorAuto)
-                .setting(clap::AppSettings::ColoredHelp)
+                .setting(clap::AppSettings::ColoredHelp),
         );
     }
 
@@ -229,7 +230,7 @@ fn main() {
             std::process::exit(0);
         }
     }
-    drop(app);  // remove arguemnt parser
+    drop(app); // remove arguemnt parser
 
     // Gets a value for config if supplied by user, or defaults to "config.toml"
     let config_name = matches.value_of("config").unwrap_or("config.toml");
@@ -239,7 +240,7 @@ fn main() {
             Ok(config) => {
                 debug!("read {} as config", config_name);
                 Some(config)
-            },
+            }
             Err(err) => {
                 warn!("Error parsing config file: {}", err);
                 None
@@ -312,8 +313,6 @@ fn main() {
             }
         }
     }
-
-
 
     if let Some(value) = &matches.value_of("control.user") {
         trace!("set imap control user to {}", value);
@@ -392,8 +391,6 @@ fn main() {
         }
     }
 
-
-
     if let Some(value) = &matches.value_of("imap.user") {
         trace!("set imap user to {}", value);
         config.Imap.user = value.to_string();
@@ -471,8 +468,6 @@ fn main() {
         }
     }
 
-
-
     if let Some(value) = &matches.value_of("smtp.user") {
         trace!("set smtp user to {}", value);
         config.Smtp.user = value.to_string();
@@ -541,7 +536,6 @@ fn main() {
             if let Ok(value) = value {
                 trace!("set company interval to {} days", value);
                 comp.interval = value;
-        
             } else if let Err(err) = value {
                 warn!("company-interval is not a usize number: {}", err);
             }
@@ -602,26 +596,24 @@ fn main() {
                         company.interval = interval;
                     }
                     config.companies.push(company);
-                } 
+                }
             }
         }
     } else {
         eprintln!("no config for companies supplied");
     }
 
-
-    drop(matches);  // removed parsed arguments
+    drop(matches); // removed parsed arguments
     drop(toml_config);
     config.run();
 }
-
 
 /// create completion
 #[cfg(feature = "completion")]
 fn completion(args: &clap::ArgMatches, app: &mut App) {
     let shell: String = match args.value_of("shell") {
         Some(shell) => shell.to_string(),
-        None => shell()
+        None => shell(),
     };
 
     use clap::Shell;
@@ -653,15 +645,14 @@ fn completion(args: &clap::ArgMatches, app: &mut App) {
         None => Box::new(std::io::stdout()) as Box<dyn Write>,
     });
 
-
     app.gen_completions_to("datenbriefd", shell, &mut path);
 }
 
 #[cfg(all(feature = "completion", not(windows)))]
 fn shell() -> String {
     let shell: String = match std::env::var("SHELL") {
-            Ok(shell) => shell,
-            Err(_) => "/bin/bash".to_string(),
+        Ok(shell) => shell,
+        Err(_) => "/bin/bash".to_string(),
     };
     let shell = std::path::Path::new(&shell);
     match shell.file_name() {
@@ -672,7 +663,7 @@ fn shell() -> String {
 
 #[cfg(all(feature = "completion", windows))]
 fn shell() -> String {
-    "powershell".to_string()    // always default to powershell on windows
+    "powershell".to_string() // always default to powershell on windows
 }
 
 #[cfg(not(feature = "completion"))]
