@@ -15,6 +15,9 @@ use std::{
     io::{Read, Write},
 };
 
+use lettre::SmtpClient;
+use lettre::Transport;
+
 #[derive(Debug)]
 pub struct Config {
     pub ImapControl: ServerConfig,
@@ -117,6 +120,13 @@ impl Config {
 
         error!("create a run function to run:\n{:?}", self);
 
+        let mailer = new_mailer(&self.Smtp.host, self.Smtp.port);
+        if mailer.is_none() {
+            return; //no mailer available
+        }
+        let mailer = mailer.unwrap().credentials(lettre::smtp::authentication::Credentials::new(self.Smtp.user.clone(), self.Smtp.password.clone()));
+        let mut mailer = mailer.transport();
+
         loop {
             let now: DateTime<Utc> = Utc::now();
             for v in self.companies.iter_mut() {
@@ -133,8 +143,37 @@ impl Config {
                         trace!("update {} to {}", v.name, value);
                     }
 
+                    let mail = format!(include_str!("mail.fmt"), v.name, v.onw_name);
+
                     warn!("implement mail send");
-                    if !self.dry_run {}
+                    if self.dry_run {
+                        println!(
+                            r#"Mail:
+To: {}
+From: {} <{}>
+Subject: {}
+
+{}
+"#,
+                            v.mail, v.onw_name, v.alias, "SUBJECT???", mail
+                        );
+                    } else {
+                        use lettre_email::{Email, mime::TEXT_PLAIN};
+
+                        let email = Email::builder()
+                        // Addresses can be specified by the tuple (email, alias)
+                        .to((&v.mail, &v.name))
+                        // ... or by an address only
+                        .from(v.alias.to_string())
+                        .subject("Hi, Hello world")
+                        .text(mail)
+                        //.attachment_from_file(Path::new("Cargo.toml"), None, &TEXT_PLAIN)
+                        //.unwrap()
+                        .build()
+                        .unwrap();
+
+                        let result = mailer.send(email.into());
+                    }
                 }
             }
 
@@ -220,6 +259,35 @@ impl Default for Config {
             companies: Vec::new(),
             dry_run: false,
             time_file: String::from("time.json"),
+        }
+    }
+}
+
+
+fn new_mailer(server: &str, port: u16) -> Option<lettre::smtp::SmtpClient> {
+    let mut tls_builder = native_tls::TlsConnector::builder();
+    tls_builder.min_protocol_version(Some(lettre::smtp::client::net::DEFAULT_TLS_PROTOCOLS[0]));
+
+    let tls_builder = match tls_builder.build() {
+        Err(err) => {
+            error!("Unable to seupt tls config: {}", err);
+            return None;
+        },
+        Ok(tls) => tls,
+    };
+
+
+    let tls_parameters =
+        lettre::smtp::client::net::ClientTlsParameters::new(server.to_string(), tls_builder);
+
+    match SmtpClient::new(
+        (server, port),
+        lettre::smtp::ClientSecurity::Wrapper(tls_parameters),
+    ) {
+        Ok(client) => Some(client),
+        Err(err) => {
+            error!("unable to init smtp client: {}", err);
+            None
         }
     }
 }
