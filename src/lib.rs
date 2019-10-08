@@ -90,6 +90,8 @@ impl Encryption {
     }
 }
 
+const SUBJECT: &'static str = "Selbstauskunft nach DSGVO";
+
 impl Config {
     pub fn new() -> Self {
         Default::default()
@@ -118,8 +120,6 @@ impl Config {
             }
         }
 
-        error!("create a run function to run:\n{:?}", self);
-
         let mailer = new_mailer(&self.Smtp.host, self.Smtp.port);
         if mailer.is_none() {
             return; //no mailer available
@@ -143,9 +143,8 @@ impl Config {
                         trace!("update {} to {}", v.name, value);
                     }
 
-                    let mail = format!(include_str!("mail.fmt"), v.name, v.onw_name);
+                    let mail = format!(include_str!("mail.fmt"), v.onw_name);
 
-                    warn!("implement mail send");
                     if self.dry_run {
                         println!(
                             r#"Mail:
@@ -155,24 +154,33 @@ Subject: {}
 
 {}
 "#,
-                            v.mail, v.onw_name, v.alias, "SUBJECT???", mail
+                            v.mail, v.onw_name, v.alias, SUBJECT, mail
                         );
                     } else {
                         use lettre_email::{Email, mime::TEXT_PLAIN};
+
+                        let message_id = uuid::Uuid::new_v4();
 
                         let email = Email::builder()
                         // Addresses can be specified by the tuple (email, alias)
                         .to((&v.mail, &v.name))
                         // ... or by an address only
-                        .from(v.alias.to_string())
-                        .subject("Hi, Hello world")
+                        .from((v.alias.to_string(), &v.onw_name))
+                        .subject(SUBJECT)
                         .text(mail)
-                        //.attachment_from_file(Path::new("Cargo.toml"), None, &TEXT_PLAIN)
-                        //.unwrap()
+                        .message_id(format!("<{}@{}>", message_id, self.Smtp.host))
                         .build()
                         .unwrap();
 
+                        trace!("send mail to {} now", v.name);
+
                         let result = mailer.send(email.into());
+
+                        if result.is_ok() {
+                            debug!("send mail to {}", v.name);
+                        } else if let Err(err) = result {
+                            warn!("could not send mail to {}: {}", v.name, err);
+                        }
                     }
                 }
             }
@@ -266,7 +274,7 @@ impl Default for Config {
 
 fn new_mailer(server: &str, port: u16) -> Option<lettre::smtp::SmtpClient> {
     let mut tls_builder = native_tls::TlsConnector::builder();
-    tls_builder.min_protocol_version(Some(lettre::smtp::client::net::DEFAULT_TLS_PROTOCOLS[0]));
+    tls_builder.min_protocol_version(Some(lettre::smtp::client::net::DEFAULT_TLS_MIN_PROTOCOL));
 
     let tls_builder = match tls_builder.build() {
         Err(err) => {
