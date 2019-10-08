@@ -11,7 +11,7 @@ mod tests;
 use chrono::prelude::*;
 use serde_json::Value;
 use std::{
-    fs::{File},
+    fs::File,
     io::{Read, Write},
 };
 
@@ -39,10 +39,16 @@ pub struct ServerConfig {
 
 impl ServerConfig {
     pub fn new() -> Self {
+        Default::default()
+    }
+}
+
+impl Default for ServerConfig {
+    fn default() -> Self {
         Self {
             port: 0,
             host: String::new(),
-            encryption: Encryption::starttls,
+            encryption: Encryption::StartTLS,
             user: String::new(),
             password: String::new(),
         }
@@ -62,6 +68,12 @@ pub struct Company {
 
 impl Company {
     pub fn new() -> Self {
+        Default::default()
+    }
+}
+
+impl Default for Company {
+    fn default() -> Self {
         Self {
             name: String::new(),
             mail: String::new(),
@@ -76,21 +88,21 @@ impl Company {
 
 #[derive(Debug)]
 pub enum Encryption {
-    tls,
-    starttls,
+    TLS,
+    StartTLS,
 }
 
 impl Encryption {
     pub fn parse(value: &str) -> Self {
         match value.to_lowercase().as_str() {
-            "tls" => Encryption::tls,
-            "starttls" => Encryption::starttls,
-            _ => Encryption::starttls,
+            "tls" => Encryption::TLS,
+            "starttls" => Encryption::StartTLS,
+            _ => Encryption::StartTLS,
         }
     }
 }
 
-const SUBJECT: &'static str = "Selbstauskunft nach DSGVO";
+const SUBJECT: &str = "Selbstauskunft nach DSGVO";
 
 impl Config {
     pub fn new() -> Self {
@@ -124,7 +136,12 @@ impl Config {
         if mailer.is_none() {
             return; //no mailer available
         }
-        let mailer = mailer.unwrap().credentials(lettre::smtp::authentication::Credentials::new(self.smtp.user.clone(), self.smtp.password.clone()));
+        let mailer = mailer
+            .unwrap()
+            .credentials(lettre::smtp::authentication::Credentials::new(
+                self.smtp.user.clone(),
+                self.smtp.password.clone(),
+            ));
         let mut mailer = mailer.transport();
 
         loop {
@@ -135,7 +152,7 @@ impl Config {
                     info!("{} is elapsed, {} reminder", v.name, v.reminder);
 
                     // update time
-                    let now: DateTime<Utc> = now.clone();
+                    let now: DateTime<Utc> = now;
                     if let Some(value) =
                         now.checked_add_signed(chrono::Duration::days(v.interval as i64))
                     {
@@ -157,20 +174,20 @@ Subject: {}
                             v.mail, v.onw_name, v.alias, SUBJECT, mail
                         );
                     } else {
-                        use lettre_email::{Email, mime::TEXT_PLAIN};
+                        use lettre_email::Email;
 
                         let message_id = uuid::Uuid::new_v4();
 
                         let email = Email::builder()
-                        // Addresses can be specified by the tuple (email, alias)
-                        .to((&v.mail, &v.name))
-                        // ... or by an address only
-                        .from((v.alias.to_string(), &v.onw_name))
-                        .subject(SUBJECT)
-                        .text(mail)
-                        .message_id(format!("<{}@{}>", message_id, self.smtp.host))
-                        .build()
-                        .unwrap();
+                            // Addresses can be specified by the tuple (email, alias)
+                            .to((&v.mail, &v.name))
+                            // ... or by an address only
+                            .from((v.alias.to_string(), &v.onw_name))
+                            .subject(SUBJECT)
+                            .text(mail)
+                            .message_id(format!("<{}@{}>", message_id, self.smtp.host))
+                            .build()
+                            .unwrap();
 
                         trace!("send mail to {} now", v.name);
 
@@ -187,7 +204,9 @@ Subject: {}
 
             // update time table
             if !self.dry_run {
-                self.write_time();
+                if let Err(err) = self.write_time() {
+                    error!("Could not write timefile: {}", err);
+                }
             }
 
             std::thread::sleep(std::time::Duration::from_secs(100));
@@ -271,7 +290,6 @@ impl Default for Config {
     }
 }
 
-
 fn new_mailer(server: &str, port: u16) -> Option<lettre::smtp::SmtpClient> {
     let mut tls_builder = native_tls::TlsConnector::builder();
     tls_builder.min_protocol_version(Some(lettre::smtp::client::net::DEFAULT_TLS_MIN_PROTOCOL));
@@ -280,10 +298,9 @@ fn new_mailer(server: &str, port: u16) -> Option<lettre::smtp::SmtpClient> {
         Err(err) => {
             error!("Unable to seupt tls config: {}", err);
             return None;
-        },
+        }
         Ok(tls) => tls,
     };
-
 
     let tls_parameters =
         lettre::smtp::client::net::ClientTlsParameters::new(server.to_string(), tls_builder);
