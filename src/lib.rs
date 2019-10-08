@@ -11,7 +11,7 @@ mod tests;
 use chrono::prelude::*;
 use serde_json::Value;
 use std::{
-    fs::{File, OpenOptions},
+    fs::{File},
     io::{Read, Write},
 };
 
@@ -20,9 +20,9 @@ use lettre::Transport;
 
 #[derive(Debug)]
 pub struct Config {
-    pub ImapControl: ServerConfig,
-    pub Imap: ServerConfig,
-    pub Smtp: ServerConfig,
+    pub imap_control: ServerConfig,
+    pub imap: ServerConfig,
+    pub smtp: ServerConfig,
     pub companies: Vec<Company>,
     pub dry_run: bool,
     pub time_file: String,
@@ -120,11 +120,11 @@ impl Config {
             }
         }
 
-        let mailer = new_mailer(&self.Smtp.host, self.Smtp.port);
+        let mailer = new_mailer(&self.smtp.host, self.smtp.port);
         if mailer.is_none() {
             return; //no mailer available
         }
-        let mailer = mailer.unwrap().credentials(lettre::smtp::authentication::Credentials::new(self.Smtp.user.clone(), self.Smtp.password.clone()));
+        let mailer = mailer.unwrap().credentials(lettre::smtp::authentication::Credentials::new(self.smtp.user.clone(), self.smtp.password.clone()));
         let mut mailer = mailer.transport();
 
         loop {
@@ -168,7 +168,7 @@ Subject: {}
                         .from((v.alias.to_string(), &v.onw_name))
                         .subject(SUBJECT)
                         .text(mail)
-                        .message_id(format!("<{}@{}>", message_id, self.Smtp.host))
+                        .message_id(format!("<{}@{}>", message_id, self.smtp.host))
                         .build()
                         .unwrap();
 
@@ -261,9 +261,9 @@ Subject: {}
 impl Default for Config {
     fn default() -> Self {
         Self {
-            Imap: ServerConfig::new(),
-            Smtp: ServerConfig::new(),
-            ImapControl: ServerConfig::new(),
+            imap: ServerConfig::new(),
+            smtp: ServerConfig::new(),
+            imap_control: ServerConfig::new(),
             companies: Vec::new(),
             dry_run: false,
             time_file: String::from("time.json"),

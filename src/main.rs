@@ -257,13 +257,13 @@ fn main() {
 
     if let Some(value) = &matches.value_of("control.server") {
         trace!("set imap control server to {}", value);
-        config.ImapControl.host = value.to_string();
+        config.imap_control.host = value.to_string();
     } else if let Some(toml_config) = &toml_config {
         if let Some(value) = toml_config.get("control") {
             if let Some(value) = value.get("server") {
                 if let Some(value) = value.as_str() {
                     trace!("set imap control server to {}", value);
-                    config.ImapControl.host = value.to_string();
+                    config.imap_control.host = value.to_string();
                 }
             }
         }
@@ -283,7 +283,7 @@ fn main() {
         let value: Result<u16, std::num::ParseIntError> = value.parse();
         if let Ok(value) = value {
             trace!("set imap control port to {}", value);
-            config.ImapControl.port = value;
+            config.imap_control.port = value;
         } else if let Err(err) = value {
             warn!("imap control port is not a u16 number: {}", err);
         }
@@ -292,7 +292,7 @@ fn main() {
             if let Some(value) = value.get("port") {
                 if let Some(value) = value.as_integer() {
                     trace!("set imap control port to {}", value);
-                    config.ImapControl.port = value as u16;
+                    config.imap_control.port = value as u16;
                 }
             }
         }
@@ -301,14 +301,14 @@ fn main() {
     if let Some(value) = &matches.value_of("control.encryption") {
         let value = datenbriefd::Encryption::parse(value);
         trace!("set imap control encryption to {}", "FIXME");
-        config.ImapControl.encryption = value;
+        config.imap_control.encryption = value;
     } else if let Some(toml_config) = &toml_config {
         if let Some(value) = toml_config.get("control") {
             if let Some(value) = value.get("encryption") {
                 if let Some(value) = value.as_str() {
                     let value = datenbriefd::Encryption::parse(value);
                     trace!("set imap control encryption to {}", "FIXME");
-                    config.ImapControl.encryption = value;
+                    config.imap_control.encryption = value;
                 }
             }
         }
@@ -316,13 +316,13 @@ fn main() {
 
     if let Some(value) = &matches.value_of("control.user") {
         trace!("set imap control user to {}", value);
-        config.ImapControl.user = value.to_string();
+        config.imap_control.user = value.to_string();
     } else if let Some(toml_config) = &toml_config {
         if let Some(value) = toml_config.get("control") {
             if let Some(value) = value.get("user") {
                 if let Some(value) = value.as_str() {
                     trace!("set imap control user to {}", value);
-                    config.ImapControl.user = value.to_string();
+                    config.imap_control.user = value.to_string();
                 }
             }
         }
@@ -330,13 +330,13 @@ fn main() {
 
     if let Some(value) = &matches.value_of("control.password") {
         //trace!("set imap control password to {}", value);
-        config.ImapControl.password = value.to_string();
+        config.imap_control.password = value.to_string();
     } else if let Some(toml_config) = &toml_config {
         if let Some(value) = toml_config.get("control") {
             if let Some(value) = value.get("password") {
                 if let Some(value) = value.as_str() {
                     //trace!("set imap control password to {}", value);
-                    config.ImapControl.password = value.to_string();
+                    config.imap_control.password = value.to_string();
                 }
             }
         }
@@ -344,13 +344,13 @@ fn main() {
 
     if let Some(value) = &matches.value_of("imap.server") {
         trace!("set imap server to {}", value);
-        config.Imap.host = value.to_string();
+        config.imap.host = value.to_string();
     } else if let Some(toml_config) = &toml_config {
         if let Some(value) = toml_config.get("imap") {
             if let Some(value) = value.get("server") {
                 if let Some(value) = value.as_str() {
                     trace!("set imap server to {}", value);
-                    config.Imap.host = value.to_string();
+                    config.imap.host = value.to_string();
                 }
             }
         }
@@ -360,7 +360,7 @@ fn main() {
         let value: Result<u16, std::num::ParseIntError> = value.parse();
         if let Ok(value) = value {
             trace!("set imap port to {}", value);
-            config.Imap.port = value;
+            config.imap.port = value;
         } else if let Err(err) = value {
             warn!("imap port is not a u16 number: {}", err);
         }
@@ -369,7 +369,7 @@ fn main() {
             if let Some(value) = value.get("port") {
                 if let Some(value) = value.as_integer() {
                     trace!("set imap port to {}", value);
-                    config.Imap.port = value as u16;
+                    config.imap.port = value as u16;
                 }
             }
         }
@@ -378,14 +378,14 @@ fn main() {
     if let Some(value) = &matches.value_of("imap.encryption") {
         let value = datenbriefd::Encryption::parse(value);
         trace!("set imap encryption to {}", "FIXME");
-        config.Imap.encryption = value;
+        config.imap.encryption = value;
     } else if let Some(toml_config) = &toml_config {
         if let Some(value) = toml_config.get("imap") {
             if let Some(value) = value.get("encryption") {
                 if let Some(value) = value.as_str() {
                     let value = datenbriefd::Encryption::parse(value);
                     trace!("set imap encryption to {}", "FIXME");
-                    config.Imap.encryption = value;
+                    config.imap.encryption = value;
                 }
             }
         }
@@ -393,13 +393,13 @@ fn main() {
 
     if let Some(value) = &matches.value_of("imap.user") {
         trace!("set imap user to {}", value);
-        config.Imap.user = value.to_string();
+        config.imap.user = value.to_string();
     } else if let Some(toml_config) = &toml_config {
         if let Some(value) = toml_config.get("imap") {
             if let Some(value) = value.get("user") {
                 if let Some(value) = value.as_str() {
                     trace!("set imap user to {}", value);
-                    config.Imap.user = value.to_string();
+                    config.imap.user = value.to_string();
                 }
             }
         }
@@ -407,13 +407,13 @@ fn main() {
 
     if let Some(value) = &matches.value_of("control.password") {
         //trace!("set imap password to {}", value);
-        config.Imap.password = value.to_string();
+        config.imap.password = value.to_string();
     } else if let Some(toml_config) = &toml_config {
         if let Some(value) = toml_config.get("imap") {
             if let Some(value) = value.get("password") {
                 if let Some(value) = value.as_str() {
                     //trace!("set imap password to {}", value);
-                    config.Imap.password = value.to_string();
+                    config.imap.password = value.to_string();
                 }
             }
         }
@@ -421,13 +421,13 @@ fn main() {
 
     if let Some(value) = &matches.value_of("smtp.server") {
         trace!("set smtp server to {}", value);
-        config.Smtp.host = value.to_string();
+        config.smtp.host = value.to_string();
     } else if let Some(toml_config) = &toml_config {
         if let Some(value) = toml_config.get("smtp") {
             if let Some(value) = value.get("server") {
                 if let Some(value) = value.as_str() {
                     trace!("set smtp server to {}", value);
-                    config.Smtp.host = value.to_string();
+                    config.smtp.host = value.to_string();
                 }
             }
         }
@@ -437,7 +437,7 @@ fn main() {
         let value: Result<u16, std::num::ParseIntError> = value.parse();
         if let Ok(value) = value {
             trace!("set smtp port to {}", value);
-            config.Smtp.port = value;
+            config.smtp.port = value;
         } else if let Err(err) = value {
             warn!("imap smtp is not a u16 number: {}", err);
         }
@@ -446,7 +446,7 @@ fn main() {
             if let Some(value) = value.get("port") {
                 if let Some(value) = value.as_integer() {
                     trace!("set smtp port to {}", value);
-                    config.Smtp.port = value as u16;
+                    config.smtp.port = value as u16;
                 }
             }
         }
@@ -455,14 +455,14 @@ fn main() {
     if let Some(value) = &matches.value_of("smtp.encryption") {
         let value = datenbriefd::Encryption::parse(value);
         trace!("set imap control encryption to {}", "FIXME");
-        config.Smtp.encryption = value;
+        config.smtp.encryption = value;
     } else if let Some(toml_config) = &toml_config {
         if let Some(value) = toml_config.get("smtp") {
             if let Some(value) = value.get("encryption") {
                 if let Some(value) = value.as_str() {
                     let value = datenbriefd::Encryption::parse(value);
                     trace!("set smtp encryption to {}", "FIXME");
-                    config.Smtp.encryption = value;
+                    config.smtp.encryption = value;
                 }
             }
         }
@@ -470,13 +470,13 @@ fn main() {
 
     if let Some(value) = &matches.value_of("smtp.user") {
         trace!("set smtp user to {}", value);
-        config.Smtp.user = value.to_string();
+        config.smtp.user = value.to_string();
     } else if let Some(toml_config) = &toml_config {
         if let Some(value) = toml_config.get("smtp") {
             if let Some(value) = value.get("user") {
                 if let Some(value) = value.as_str() {
                     trace!("set smtp user to {}", value);
-                    config.Smtp.user = value.to_string();
+                    config.smtp.user = value.to_string();
                 }
             }
         }
@@ -484,13 +484,13 @@ fn main() {
 
     if let Some(value) = &matches.value_of("smtp.password") {
         //trace!("set smtp password to {}", value);
-        config.Smtp.password = value.to_string();
+        config.smtp.password = value.to_string();
     } else if let Some(toml_config) = &toml_config {
         if let Some(value) = toml_config.get("smtp") {
             if let Some(value) = value.get("password") {
                 if let Some(value) = value.as_str() {
                     //trace!("set smtp password to {}", value);
-                    config.Smtp.password = value.to_string();
+                    config.smtp.password = value.to_string();
                 }
             }
         }
