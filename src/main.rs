@@ -5,6 +5,7 @@ extern crate env_logger;
 use clap::{App, Arg, SubCommand};
 use datenbriefd::{Company, Config};
 
+#[allow(clippy::cognitive_complexity)]
 fn main() {
     env_logger::init();
     let mut app = App::new("datenbriefd")
@@ -233,7 +234,7 @@ fn main() {
     drop(app); // remove arguemnt parser
 
     // Gets a value for config if supplied by user, or defaults to "config.toml"
-    let config_name = matches.value_of("config").unwrap_or("config.toml");
+    let config_name = &matches.value_of("config").unwrap_or("config.toml");
 
     let toml_config: Option<toml::Value> = match std::fs::read_to_string(config_name) {
         Ok(config) => match toml::from_str(config.as_str()) {
@@ -251,7 +252,6 @@ fn main() {
             None
         }
     };
-    drop(config_name);
 
     let mut config = Config::new();
 
@@ -619,13 +619,13 @@ fn completion(args: &clap::ArgMatches, app: &mut App) {
     use clap::Shell;
     let shell_l = shell.to_lowercase();
     let shell: Shell;
-    if shell_l == "fish".to_string() {
+    if shell_l == "fish" {
         shell = Shell::Fish;
-    } else if shell_l == "zsh".to_string() {
+    } else if shell_l == "zsh" {
         shell = Shell::Zsh;
-    } else if shell_l == "powershell".to_string() {
+    } else if shell_l == "powershell" {
         shell = Shell::PowerShell;
-    } else if shell_l == "elvish".to_string() {
+    } else if shell_l == "elvish" {
         shell = Shell::Elvish;
     } else {
         shell = Shell::Bash;
