@@ -11,7 +11,7 @@ default = [ "completion" ]
 completion = []
 
 [dependencies]
-clap = { version = "2.33.0", features = [ "color" ] }
+clap = { version = "2.33.3", features = [ "color" ] }
 log = { version = "0.4", features = ["max_level_trace", "release_max_level_info"] }
 env_logger = "0.7.0"
 toml = "0.5.3"
